@@ -20,7 +20,7 @@ public class UserController {
         this.userService = userService;
     }
     @GetMapping("/user")
-    @CheckSecurity(roles = {"ADMIN", "KLIJENT", "MENADZER"})
+    @CheckSecurity(roles = {"ADMIN"})
     public ResponseEntity<Page<UserDto>> getAllUsers(@RequestHeader("Authorization") String authorization,
                                                      Pageable pageable) {
 
