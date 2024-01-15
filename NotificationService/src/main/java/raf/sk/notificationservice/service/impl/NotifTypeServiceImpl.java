@@ -6,11 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import raf.sk.notificationservice.domain.NotificationType;
-import raf.sk.notificationservice.dto.NotificationDto;
 import raf.sk.notificationservice.dto.NotificationTypeDto;
 import raf.sk.notificationservice.exception.NotFoundException;
 import raf.sk.notificationservice.mapper.NotificationMapper;
-import raf.sk.notificationservice.repository.NotificationRepository;
 import raf.sk.notificationservice.repository.NotificationTypeRepository;
 import raf.sk.notificationservice.service.NotificationTypeService;
 

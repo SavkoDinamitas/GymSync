@@ -28,6 +28,8 @@ public class Notification {
     private String email;
     @CreatedDate
     private LocalDateTime createdDateTime;
+
+    private Long id_korisnika;
     @PrePersist
     public void prePersist(){
         this.createdDateTime = LocalDateTime.now();

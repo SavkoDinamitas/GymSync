@@ -99,4 +99,13 @@ public class UserServiceImplementation implements UserService {
         userRepository.save(majmuncina);
         return userMapper.userToUserDto(majmuncina);
     }
+
+    @Override
+    public User findById(Long id) {
+        Optional<User> xd = userRepository.findUserById(id);
+        if(xd.isEmpty()){
+            throw new NotFoundException("Ne postoji korisnik sa id: " + id);
+        }
+        return xd.get();
+    }
 }

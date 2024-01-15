@@ -1,12 +1,8 @@
-package raf.sk.notificationservice.dto;
+package komedija;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import raf.sk.notificationservice.domain.NotificationType;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -18,9 +14,10 @@ public class NotificationDto {
     @NotBlank
     private String message;
     @NotNull
-    private NotificationType notification_type;
+    private String notification_type;
     @Email
     private String email;
-    @CreatedDate
     private LocalDateTime createdDateTime;
+    @NotBlank
+    private Long id_korisnika;
 }

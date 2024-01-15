@@ -3,6 +3,7 @@ package raf.sk.userservice.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import raf.sk.userservice.domain.User;
 import raf.sk.userservice.dto.*;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface UserService {
     TokenResponseDto login(TokenRequestDto tokenRequestDto);
 
     UserDto putUser(Long id, MasanDto gazenje);
+
+    User findById(Long id);
 }
