@@ -1,8 +1,10 @@
 package raf.sk.teretanaservis.service.impl;
 
 import io.github.resilience4j.retry.Retry;
+import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import komedija.CekicanjeDto;
+import komedija.ManagerCheckDto;
 import komedija.NotificationDto;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -17,9 +19,13 @@ import raf.sk.teretanaservis.domain.Rezervacija;
 import raf.sk.teretanaservis.domain.Trening;
 import raf.sk.teretanaservis.dto.FreeReservationDto;
 import raf.sk.teretanaservis.dto.RezervacijaDto;
+import raf.sk.teretanaservis.exception.CustomException;
+import raf.sk.teretanaservis.exception.ErrorCode;
+import raf.sk.teretanaservis.exception.NotFoundException;
 import raf.sk.teretanaservis.repository.NedostupniTerminiRepository;
 import raf.sk.teretanaservis.repository.RezervacijaRepository;
 import raf.sk.teretanaservis.repository.TreningRepository;
+import raf.sk.teretanaservis.security.service.TokenService;
 import raf.sk.teretanaservis.service.*;
 
 import javax.management.Notification;
@@ -40,6 +46,7 @@ public class CekicanjeServisImpl implements CekicanjeServis {
     private RezervacijaRepository rezervacijaRepository;
     private NotificationService notificationService;
     private NedostupniTerminiRepository nedostupniTerminiRepository;
+    private TokenService tokenService;
 
     private final int MAKSIMALNI_BROJ_U_GRUPI = 12;
     private final Retry retryPattern;
@@ -105,7 +112,7 @@ public class CekicanjeServisImpl implements CekicanjeServis {
         rez.setUserId(rezervacija.getUserId());
         rez.setPrice(tr.get().getCena());
         //resavanje popusta
-        if(teretaneService.getPopust(tr.get().getTeretana().getId()) == numOfTraining.getBroj_zakazanih_treninga()){
+        if(numOfTraining.getBroj_zakazanih_treninga() % teretaneService.getPopust(tr.get().getTeretana().getId()) == 0){
             rez.setPrice(0);
         }
         //slanje mejla
@@ -120,9 +127,64 @@ public class CekicanjeServisImpl implements CekicanjeServis {
         rezervacijaRepository.save(rez);
         var nn = new NedostupniTermini();
         nn.setTermin(rezervacija.getTermin());
-        nedostupniTerminiRepository.save(nn);
+        Optional<NedostupniTermini> xd = nedostupniTerminiRepository.findNedostupniTerminiByTermin(rezervacija.getTermin());
+        if(xd.isEmpty())
+            nedostupniTerminiRepository.save(nn);
 
         return HttpStatus.CREATED;
+    }
+
+    @Override
+    public HttpStatus otkaziTermin(Long id, String authorization) {
+        Claims koristanDeo = tokenService.parseToken(authorization.split(" ")[1]);
+        String role = koristanDeo.get("role", String.class);
+        Long userId = koristanDeo.get("id", Long.class);
+        Optional<Rezervacija> r = rezervacijaRepository.findRezervacijaById(id);
+        if(r.isEmpty()){
+            throw new NotFoundException("Ne postoji rezervacija sa id: " + id);
+        }
+
+        if((role.equals("MENADZER") && praviMenadzer(authorization, r.get().getTrening().getTeretana().getId())) || role.equals("ADMIN")){
+            //menadzersko otkazivanje
+            List<Rezervacija> rezervacije = rezervacijaRepository.findAllByTreningAndTermin(r.get().getTrening(), r.get().getTermin());
+            for(var res : rezervacije){
+                rezervacijaRepository.delete(res);
+                //smanji broj rezervacija
+                CekicanjeDto volimOvajDto = userServiceRestTemplate.exchange("/user/smanji/" + res.getUserId(),
+                        HttpMethod.POST, null, CekicanjeDto.class).getBody();
+                NotificationDto mejlic = new NotificationDto();
+                mejlic.setEmail(volimOvajDto.getEmail());
+                mejlic.setNotification_type("Otkazan trening");
+                mejlic.setId_korisnika(res.getUserId());
+                mejlic.setMessage("Trening koji ste zakazali je nazalost otkazan \n Vrsta treninga: " +
+                        res.getTrening().getTipTreninga() + "\n Vreme: " + res.getTermin());
+                notificationService.notify(mejlic);
+                //posto je menadzer termin ostaje zauzet
+            }
+        }
+        else{
+            //korisnicko otkazivanje
+            if(!userId.equals(r.get().getUserId())){
+                return HttpStatus.UNAUTHORIZED;
+            }
+            List<Rezervacija> rezervacije = rezervacijaRepository.findAllByTreningAndTermin(r.get().getTrening(), r.get().getTermin());
+            if(rezervacije.size() == 1){
+                Optional<NedostupniTermini> xd = nedostupniTerminiRepository.findNedostupniTerminiByTermin(r.get().getTermin());
+                nedostupniTerminiRepository.delete(xd.get());
+            }
+            rezervacijaRepository.delete(r.get());
+            //smanji broj rezervacija
+            CekicanjeDto volimOvajDto = userServiceRestTemplate.exchange("/user/smanji/" + r.get().getUserId(),
+                    HttpMethod.POST, null, CekicanjeDto.class).getBody();
+            NotificationDto mejlic = new NotificationDto();
+            mejlic.setEmail(volimOvajDto.getEmail());
+            mejlic.setNotification_type("Otkazan trening");
+            mejlic.setId_korisnika(r.get().getUserId());
+            mejlic.setMessage("Uspesno ste otkazali trening \n Vrsta treninga: " +
+                    r.get().getTrening().getTipTreninga() + "\n Vreme: " + r.get().getTermin());
+            notificationService.notify(mejlic);
+        }
+        return null;
     }
 
     private CekicanjeDto brojTreninga(Long id) {
@@ -139,5 +201,21 @@ public class CekicanjeServisImpl implements CekicanjeServis {
         catch (Exception e) {
             throw new RuntimeException("Internal server error");
         }
+    }
+
+    private boolean praviMenadzer(String authorization, Long id){
+        Claims mast = tokenService.parseToken(authorization.split(" ")[1]);
+        String role = mast.get("role", String.class);
+        Long idUsera = mast.get("id", Long.class);
+        if(!role.equals("MENADZER"))
+            return true;
+
+        ManagerCheckDto mc = userServiceRestTemplate.exchange("/user/sala/" + idUsera,
+                HttpMethod.GET, null, ManagerCheckDto.class).getBody();
+
+        if(!id.equals((long)mc.getIdTeretane())){
+            return false;
+        }
+        return true;
     }
 }

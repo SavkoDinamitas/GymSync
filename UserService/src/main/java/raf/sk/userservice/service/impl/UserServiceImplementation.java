@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 import komedija.CekicanjeDto;
+import komedija.ManagerCheckDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -134,5 +135,28 @@ public class UserServiceImplementation implements UserService {
         ddx.setEmail(xd.get().getEmail());
         userRepository.save(xd.get());
         return ddx;
+    }
+
+    @Override
+    public CekicanjeDto smanji(Long id) {
+        Optional<User> xd = userRepository.findUserById(id);
+        if(xd.isEmpty()){
+            throw new NotFoundException("Ne postoji korisnik sa id: " + id);
+        }
+        xd.get().setBroj_zakazanih_treninga(xd.get().getBroj_zakazanih_treninga()-1);
+        CekicanjeDto ddx = new CekicanjeDto();
+        ddx.setBroj_zakazanih_treninga(xd.get().getBroj_zakazanih_treninga());
+        ddx.setEmail(xd.get().getEmail());
+        userRepository.save(xd.get());
+        return ddx;
+    }
+
+    @Override
+    public ManagerCheckDto dajSalu(Long id) {
+        Optional<User> xd = userRepository.findUserById(id);
+        if(xd.isEmpty()){
+            throw new NotFoundException("Ne postoji korisnik sa id: " + id);
+        }
+        return new ManagerCheckDto(xd.get().getId_sale());
     }
 }

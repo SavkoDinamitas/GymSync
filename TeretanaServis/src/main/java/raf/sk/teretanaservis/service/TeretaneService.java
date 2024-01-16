@@ -10,7 +10,7 @@ public interface TeretaneService {
 
     TeretanaDto delete(Long id);
 
-    TeretanaDto put(TeretanaDto teretanaDto, Long id);
+    TeretanaDto put(TeretanaDto teretanaDto, Long id, String authorization);
 
     List<TeretanaDto> findAll();
 

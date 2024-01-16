@@ -2,6 +2,7 @@ package raf.sk.userservice.service;
 
 
 import komedija.CekicanjeDto;
+import komedija.ManagerCheckDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import raf.sk.userservice.domain.User;
@@ -28,4 +29,8 @@ public interface UserService {
     CekicanjeDto lolcina(Long id);
 
     CekicanjeDto uvecaj(Long id);
+
+    CekicanjeDto smanji(Long id);
+
+    ManagerCheckDto dajSalu(Long id);
 }

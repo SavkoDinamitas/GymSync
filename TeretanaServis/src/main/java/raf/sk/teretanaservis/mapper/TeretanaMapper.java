@@ -23,7 +23,13 @@ public class TeretanaMapper {
 
     public void putTeretana(Teretana n, TeretanaDto dto){
         var m = updateModelMapper();
+        int popust = n.getPopust();
+        int brojTrenera = n.getBrojTrenera();
         m.map(dto, n);
+        if(n.getPopust() == 0)
+            n.setPopust(popust);
+        if(n.getBrojTrenera() == 0)
+            n.setBrojTrenera(brojTrenera);
     }
 
     public void putTrening(Trening n, TreningDto dto){
@@ -54,16 +60,14 @@ public class TeretanaMapper {
     }
 
     public Trening DtoToTrening(TreningDto dto){
-        var m = new ModelMapper();
+        var m = updateModelMapper();
         Trening xd = m.map(dto, Trening.class);
-        xd.getTeretana().setId(dto.getTeretanaId());
         return xd;
     }
 
     public TreningDto TreningToDto(Trening n){
-        var m = new ModelMapper();
+        var m = updateModelMapper();
         TreningDto xd = m.map(n, TreningDto.class);
-        xd.setTeretanaId(n.getTeretana().getId());
         return xd;
     }
 }

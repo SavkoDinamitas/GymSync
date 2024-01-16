@@ -28,4 +28,10 @@ public class CekicanjeController{
 
         return new ResponseEntity<>(cekicanjeServis.kreirajTermin(komedija), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> otkaziTermin(@RequestHeader("Authorization") String authorization, @PathVariable Long id) {
+
+        return new ResponseEntity<>(cekicanjeServis.otkaziTermin(id, authorization), HttpStatus.OK);
+    }
 }

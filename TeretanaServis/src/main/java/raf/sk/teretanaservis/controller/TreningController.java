@@ -18,30 +18,30 @@ public class TreningController {
     private TreningService treningService;
 
     @GetMapping()
-    @CheckSecurity(roles = {"ADMIN", "MANAGER"})
+    @CheckSecurity(roles = {"ADMIN", "MENADZER"})
     public ResponseEntity<List<TreningDto>> getAllTypes(@RequestHeader("Authorization") String authorization) {
 
         return new ResponseEntity<>(treningService.findAll(), HttpStatus.OK);
     }
 
     @PostMapping()
-    @CheckSecurity(roles = {"ADMIN", "MANAGER"})
+    @CheckSecurity(roles = {"ADMIN", "MENADZER"})
     public ResponseEntity<TreningDto> saveType(@RequestHeader("Authorization") String authorization,
                                                         @RequestBody @Valid TreningDto typeDto) {
-        return new ResponseEntity<>(treningService.add(typeDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(treningService.add(typeDto, authorization), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @CheckSecurity(roles = {"ADMIN", "MANAGER"})
+    @CheckSecurity(roles = {"ADMIN", "MENADZER"})
     public ResponseEntity<TreningDto> changeType(@RequestHeader("Authorization") String authorization,
                                                           @RequestBody @Valid TreningDto masanDto, @PathVariable Long id){
-        return new ResponseEntity<>(treningService.put(masanDto, id), HttpStatus.OK);
+        return new ResponseEntity<>(treningService.put(masanDto, id, authorization), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @CheckSecurity(roles = {"ADMIN", "MANAGER"})
+    @CheckSecurity(roles = {"ADMIN", "MENADZER"})
     public ResponseEntity<TreningDto> deleteType(@RequestHeader("Authorization") String authorization,
                                                           @PathVariable Long id){
-        return new ResponseEntity<>(treningService.delete(id), HttpStatus.OK);
+        return new ResponseEntity<>(treningService.delete(id, authorization), HttpStatus.OK);
     }
 }

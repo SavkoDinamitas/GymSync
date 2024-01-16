@@ -31,10 +31,10 @@ public class TeretanaController {
     }
 
     @PutMapping("/{id}")
-    @CheckSecurity(roles = {"ADMIN"})
+    @CheckSecurity(roles = {"ADMIN", "MENADZER"})
     public ResponseEntity<TeretanaDto> changeType(@RequestHeader("Authorization") String authorization,
                                                           @RequestBody @Valid TeretanaDto masanDto, @PathVariable Long id){
-        return new ResponseEntity<>(teretaneService.put(masanDto, id), HttpStatus.OK);
+        return new ResponseEntity<>(teretaneService.put(masanDto, id, authorization), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

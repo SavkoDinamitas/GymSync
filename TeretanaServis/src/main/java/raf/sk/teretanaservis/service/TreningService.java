@@ -6,11 +6,11 @@ import raf.sk.teretanaservis.dto.TreningDto;
 import java.util.List;
 
 public interface TreningService {
-    TreningDto add(TreningDto teretana);
+    TreningDto add(TreningDto teretana, String authorization);
 
-    TreningDto delete(Long id);
+    TreningDto delete(Long id, String authorization);
 
-    TreningDto put(TreningDto teretanaDto, Long id);
+    TreningDto put(TreningDto teretanaDto, Long id, String authorization);
 
     List<TreningDto> findAll();
 

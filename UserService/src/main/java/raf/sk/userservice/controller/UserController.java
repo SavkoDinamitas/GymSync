@@ -1,6 +1,7 @@
 package raf.sk.userservice.controller;
 
 import komedija.CekicanjeDto;
+import komedija.ManagerCheckDto;
 import komedija.NotificationDto;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,6 +46,20 @@ public class UserController {
     public ResponseEntity<CekicanjeDto> povecaj(@RequestHeader("Authorization") String authorization,
                                                 @PathVariable Long id) {
         return new ResponseEntity<>(userService.uvecaj(id), HttpStatus.OK);
+    }
+
+    @PostMapping("/user/smanji/{id}")
+    @CheckSecurity(roles = {"ADMIN"})
+    public ResponseEntity<CekicanjeDto> smanji(@RequestHeader("Authorization") String authorization,
+                                                @PathVariable Long id) {
+        return new ResponseEntity<>(userService.smanji(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/user/sala/{id}")
+    @CheckSecurity(roles = {"ADMIN"})
+    public ResponseEntity<ManagerCheckDto> dajSalu(@RequestHeader("Authorization") String authorization,
+                                                   @PathVariable Long id) {
+        return new ResponseEntity<>(userService.dajSalu(id), HttpStatus.OK);
     }
 
     @PostMapping("/ticulica")

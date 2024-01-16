@@ -11,9 +11,11 @@ import java.util.Optional;
 
 @Repository
 public interface RezervacijaRepository extends JpaRepository<Rezervacija, Long> {
-    Optional<Rezervacija> findRezervacijaByTermin(LocalDateTime termin);
+    List<Rezervacija> findAllByTerminBetween(LocalDateTime before, LocalDateTime after);
     List<Rezervacija> findAllByUserId(Long id);
     List<Rezervacija> findAllByTrening(Trening t);
 
     List<Rezervacija> findAllByTreningAndTermin(Trening trening, LocalDateTime termin);
+
+    Optional<Rezervacija> findRezervacijaById(Long id);
 }

@@ -12,4 +12,6 @@ public interface CekicanjeServis {
     List<LocalTime> slobodniTermini(FreeReservationDto freeReservationDto);
 
     HttpStatus kreirajTermin(RezervacijaDto rezervacija);
+
+    HttpStatus otkaziTermin(Long id, String authorization);
 }
