@@ -111,7 +111,7 @@ public class CekicanjeServisImpl implements CekicanjeServis {
         //slanje mejla
         NotificationDto mejlic = new NotificationDto();
         mejlic.setEmail(numOfTraining.getEmail());
-        mejlic.setMessage("Zakazan trening u " + rezervacija.getTermin().toString() + "tip treninga: " + tr.get().getTipTreninga());
+        mejlic.setMessage("Zakazan trening u " + rezervacija.getTermin().toString() + "tip treninga:" + tr.get().getTipTreninga());
         mejlic.setNotification_type("Zakazan trening");
         mejlic.setId_korisnika(rezervacija.getUserId());
         notificationService.notify(mejlic);
