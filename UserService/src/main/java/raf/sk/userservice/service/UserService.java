@@ -1,11 +1,13 @@
 package raf.sk.userservice.service;
 
 
+import komedija.CekicanjeDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import raf.sk.userservice.domain.User;
 import raf.sk.userservice.dto.*;
 
+import javax.swing.text.Utilities;
 import java.util.List;
 
 public interface UserService {
@@ -21,5 +23,9 @@ public interface UserService {
 
     UserDto putUser(Long id, MasanDto gazenje);
 
-    User findById(Long id);
+    UserDto findById(Long id);
+
+    CekicanjeDto lolcina(Long id);
+
+    CekicanjeDto uvecaj(Long id);
 }

@@ -1,5 +1,6 @@
 package raf.sk.userservice.controller;
 
+import komedija.CekicanjeDto;
 import komedija.NotificationDto;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,20 @@ public class UserController {
         return new ResponseEntity<>(userService.findAll(pageable), HttpStatus.OK);
     }
 
+    @GetMapping("/user/{id}")
+    @CheckSecurity(roles = {"ADMIN"})
+    public ResponseEntity<CekicanjeDto> getMast(@RequestHeader("Authorization") String authorization,
+                                                @PathVariable Long id) {
+        return new ResponseEntity<>(userService.lolcina(id), HttpStatus.OK);
+    }
+
+    @PostMapping("/user/{id}")
+    @CheckSecurity(roles = {"ADMIN"})
+    public ResponseEntity<CekicanjeDto> povecaj(@RequestHeader("Authorization") String authorization,
+                                                @PathVariable Long id) {
+        return new ResponseEntity<>(userService.uvecaj(id), HttpStatus.OK);
+    }
+
     @PostMapping("/ticulica")
     @CheckSecurity(roles = {"ADMIN"})
     public ResponseEntity<BanovacaDto> banovaca(@RequestHeader("Authorization") String authorization, @RequestBody @Valid BanovacaDto banovacaDto){
@@ -48,13 +63,13 @@ public class UserController {
     }
     @PutMapping("/user/{id}")
     public ResponseEntity<UserDto> changeUser(@RequestBody @Valid MasanDto masanDto, @PathVariable Long id){
-        User tenkre = userService.findById(id);
+        UserDto tenkre = userService.findById(id);
         NotificationDto xd = new NotificationDto();
         xd.setMessage("De ste picke stigo Zdravko Cola!!!");
         xd.setEmail(tenkre.getEmail());
         xd.setNotification_type("Povratak otpisanih");
         xd.setCreatedDateTime(LocalDateTime.now());
-        xd.setId_korisnika(tenkre.getId());
+        xd.setId_korisnika(id);
         notificationService.notify(xd);
         return new ResponseEntity<>(userService.putUser(id, masanDto), HttpStatus.OK);
     }
