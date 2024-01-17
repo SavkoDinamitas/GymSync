@@ -14,9 +14,9 @@ import java.util.List;
 public interface UserService {
     Page<UserDto> findAll(Pageable pageable);
 
-    UserDto addManager(ManagerCreateDto userCreateDto);
+    AktivacijaDto addManager(ManagerCreateDto userCreateDto);
 
-    UserDto addUser(UserCreateDto userCreateDto);
+    AktivacijaDto addUser(UserCreateDto userCreateDto);
 
     BanovacaDto banuj(BanovacaDto banovacaDto);
 
@@ -33,4 +33,6 @@ public interface UserService {
     CekicanjeDto smanji(Long id);
 
     ManagerCheckDto dajSalu(Long id);
+
+    void aktivacija(String mast);
 }

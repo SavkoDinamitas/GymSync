@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 import komedija.CekicanjeDto;
 import komedija.ManagerCheckDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import raf.sk.userservice.repository.UserRepository;
 import raf.sk.userservice.security.service.TokenService;
 import raf.sk.userservice.service.UserService;
 
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -29,6 +31,8 @@ public class UserServiceImplementation implements UserService {
     private TokenService tokenService;
     private UserRepository userRepository;
     private UserMapper userMapper;
+    @Value("${service.base}")
+    private String baseUrl;
 
     public UserServiceImplementation(UserRepository userRepository, TokenService tokenService, UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -42,21 +46,35 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserDto addManager(ManagerCreateDto managerCreateDto) {
+    public AktivacijaDto addManager(ManagerCreateDto managerCreateDto) {
         User user = userMapper.managerDtotoUser(managerCreateDto);
         user.setTip(Role.MENADZER);
+        user.setBanovaca(true);
+        //generisanje linka za aktivaciju
+        Claims claims = Jwts.claims();
+        claims.put("activate", user.getId());
+
+        String link = baseUrl + "auth/activate"  + tokenService.generate(claims);
+
         //System.out.println(user.toString());
         userRepository.save(user);
-        return userMapper.userToUserDto(user);
+        return new AktivacijaDto(link);
     }
 
     @Override
-    public UserDto addUser(UserCreateDto userCreateDto) {
+    public AktivacijaDto addUser(UserCreateDto userCreateDto) {
         User user = userMapper.userDtoToUser(userCreateDto);
         user.setTip(Role.KLIJENT);
+        user.setId_sale(0);
+        user.setBanovaca(true);
         //System.out.println(user.toString());
         userRepository.save(user);
-        return userMapper.userToUserDto(user);
+        //generisanje linka za aktivaciju
+        Claims claims = Jwts.claims();
+        claims.put("activate", user.getId());
+
+        String link = baseUrl + "/auth/activate/"  + tokenService.generate(claims);
+        return new AktivacijaDto(link);
     }
 
     @Override
@@ -158,5 +176,17 @@ public class UserServiceImplementation implements UserService {
             throw new NotFoundException("Ne postoji korisnik sa id: " + id);
         }
         return new ManagerCheckDto(xd.get().getId_sale());
+    }
+
+    @Override
+    public void aktivacija(String mast) {
+        Claims ddx = tokenService.parseToken(mast);
+        Long id = ddx.get("activate", Long.class);
+        Optional<User> xd = userRepository.findUserById(id);
+        if(xd.isEmpty()){
+            throw new NotFoundException("Ne postoji korisnik sa id: " + id);
+        }
+        xd.get().setBanovaca(false);
+        userRepository.save(xd.get());
     }
 }

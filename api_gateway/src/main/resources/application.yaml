@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: zadrava-hrana-teretana-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+server:
+  port: '8084'
+eureka:
+  client:
+    enabled: true
+  instance:
+    preferIpAddress: true
+    lease-renewal-interval-in-seconds: '30'
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: gateway

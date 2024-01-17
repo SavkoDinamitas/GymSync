@@ -68,13 +68,13 @@ public class UserController {
         return new ResponseEntity<>(userService.banuj(banovacaDto), HttpStatus.OK);
     }
     @PostMapping("/user")
-    public ResponseEntity<UserDto> saveUser(@RequestBody @Valid UserCreateDto userCreateDto) {
+    public ResponseEntity<AktivacijaDto> saveUser(@RequestBody @Valid UserCreateDto userCreateDto) {
         return new ResponseEntity<>(userService.addUser(userCreateDto), HttpStatus.CREATED);
     }
 
     @PostMapping("/manager")
-    public ResponseEntity<UserDto> saveManager(@RequestBody @Valid ManagerCreateDto managerCreateDto) {
-        return new ResponseEntity<>(userService.addManager(managerCreateDto), HttpStatus.CREATED);
+    public ResponseEntity<AktivacijaDto> saveManager(@RequestBody @Valid ManagerCreateDto managerCreateDto) {
+        return new ResponseEntity<>(userService.addManager(managerCreateDto), HttpStatus.OK);
     }
     @PutMapping("/user/{id}")
     public ResponseEntity<UserDto> changeUser(@RequestBody @Valid MasanDto masanDto, @PathVariable Long id){
@@ -92,5 +92,10 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDto> loginUser(@RequestBody @Valid TokenRequestDto tokenRequestDto) {
         return new ResponseEntity<>(userService.login(tokenRequestDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/auth/activate/{mast}")
+    public void activate(@PathVariable String mast) {
+        userService.aktivacija(mast);
     }
 }
