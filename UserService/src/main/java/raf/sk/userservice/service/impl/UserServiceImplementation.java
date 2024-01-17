@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 import komedija.CekicanjeDto;
 import komedija.ManagerCheckDto;
+import komedija.NotificationDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import raf.sk.userservice.exception.NotFoundException;
 import raf.sk.userservice.mapper.UserMapper;
 import raf.sk.userservice.repository.UserRepository;
 import raf.sk.userservice.security.service.TokenService;
+import raf.sk.userservice.service.NotificationService;
 import raf.sk.userservice.service.UserService;
 
 import java.util.Map;
@@ -31,13 +33,15 @@ public class UserServiceImplementation implements UserService {
     private TokenService tokenService;
     private UserRepository userRepository;
     private UserMapper userMapper;
+    private NotificationService notificationService;
     @Value("${service.base}")
     private String baseUrl;
 
-    public UserServiceImplementation(UserRepository userRepository, TokenService tokenService, UserMapper userMapper) {
+    public UserServiceImplementation(UserRepository userRepository, TokenService tokenService, UserMapper userMapper, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.tokenService = tokenService;
         this.userMapper = userMapper;
+        this.notificationService = notificationService;
     }
     @Override
     public Page<UserDto> findAll(Pageable pageable) {
@@ -56,7 +60,14 @@ public class UserServiceImplementation implements UserService {
 
         String link = baseUrl + "auth/activate"  + tokenService.generate(claims);
 
-        //System.out.println(user.toString());
+        //slanje mejla
+        NotificationDto mejlic = new NotificationDto();
+        mejlic.setNotification_type("Aktivacija");
+        mejlic.setId_korisnika(userRepository.findUserByUsername(managerCreateDto.getUsername()).get().getId());
+        mejlic.setEmail(managerCreateDto.getEmail());
+        mejlic.setMessage("Postovani, \n za aktivaciju vaseg mejla, molimo otidjite na link:\n" + link);
+        notificationService.notify(mejlic);
+
         userRepository.save(user);
         return new AktivacijaDto(link);
     }
@@ -73,7 +84,15 @@ public class UserServiceImplementation implements UserService {
         Claims claims = Jwts.claims();
         claims.put("activate", user.getId());
 
+
         String link = baseUrl + "/auth/activate/"  + tokenService.generate(claims);
+        //slanje mejla
+        NotificationDto mejlic = new NotificationDto();
+        mejlic.setNotification_type("Aktivacija");
+        mejlic.setId_korisnika(userRepository.findUserByUsername(userCreateDto.getUsername()).get().getId());
+        mejlic.setEmail(userCreateDto.getEmail());
+        mejlic.setMessage("Postovani, \n za aktivaciju vaseg mejla, molimo otidjite na link:\n" + link);
+        notificationService.notify(mejlic);
         return new AktivacijaDto(link);
     }
 
